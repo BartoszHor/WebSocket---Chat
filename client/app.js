@@ -5,13 +5,19 @@ const addMessageForm = document.querySelector('.add-messages-form')
 const userNameInput = document.querySelector('#welcome-form .text-input')
 const messageContentInput = document.querySelector('#add-messages-form .text-input')
 let userName
-console.log(addMessageForm)
+const socket = io();
+
+socket.on('message', (event) => addMessage(event.author, event.content))
+socket.on('user', (event) => addMessage('Chat Bot', `${event.user} has left the chat :(`))
+socket.on('addUser', (event) => addMessage('Chat Bot', `${event.user} joined chat`))
+
 
 const login = (e) => {
     e.preventDefault()
     if (userNameInput.value.length > 0) {
         userName = userNameInput.value
-        console.log(userName)
+        socket.emit('user', {user: userName})
+        socket.emit('addUser', {user: userName})
         loginForm.classList.remove('show')
         messagesSection.classList.add('show')
     } else {
@@ -46,6 +52,7 @@ const sendMessage = (e) => {
         alert('Please fill in msg input before sending')
     } else {
         addMessage(userName, messageContentInput.value)
+        socket.emit('message', {author: userName, content: messageContentInput.value})
         messageContentInput.value = ''
     }
 }
